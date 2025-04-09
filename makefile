@@ -1,5 +1,5 @@
-SRC            := src/*.c
-INC            := -Isrc
+SRC            := *.c
+INC            := -I.
 C              := clang
 OUT            := program.out
 

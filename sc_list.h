@@ -15,11 +15,11 @@ typedef struct {
 } sc_list_meta_data;
 
 #define SC_LIST(type)                                                          \
-  typedef int *sc_list_##type;                                                 \
+  typedef type *sc_list_##type;                                                \
                                                                                \
   static inline sc_list_##type sc_list_##type##_alloc(void) {                  \
     void *ptr = malloc(sizeof(sc_list_meta_data) +                             \
-                       (sizeof(int) * SC_LIST_INITIAL_CAPACITY));              \
+                       (sizeof(type) * SC_LIST_INITIAL_CAPACITY));             \
     sc_list_meta_data *data = (sc_list_meta_data *)ptr;                        \
     data->capacity = SC_LIST_INITIAL_CAPACITY;                                 \
     data->count = 0;                                                           \
@@ -39,24 +39,24 @@ typedef struct {
   }                                                                            \
                                                                                \
   static inline void sc_list_##type##_add(sc_list_##type *list,                \
-                                          const int element) {                 \
+                                          const type element) {                \
     sc_list_meta_data *data = ((sc_list_meta_data *)(*list)) - 1;              \
-    const sc_list_size new_count = data->count + 1;                            \
-    const sc_list_size new_capacity = data->capacity * 2;                      \
-    if (new_count >= data->capacity) {                                         \
+    if (data->count >= data->capacity) {                                       \
+      const sc_list_size new_capacity = data->count * 2 + 1;                   \
       data = realloc(data, sizeof(sc_list_meta_data) +                         \
-                               (sizeof(int) * new_capacity));                  \
+          (sizeof(type) * new_capacity));                                      \
       *list = (sc_list_##type)(data + 1);                                      \
     }                                                                          \
     (*list)[data->count] = element;                                            \
-    data->count = new_count;                                                   \
+    data->count++;                                                             \
   }                                                                            \
                                                                                \
   static inline void sc_list_##type##_remove_at(const sc_list_##type list,     \
                                                 const sc_list_size index) {    \
+    if (!list) return;                                                         \
     sc_list_meta_data *data = ((sc_list_meta_data *)(list)) - 1;               \
     (list)[index] = (list)[data->count - 1];                                   \
     data->count--;                                                             \
   }
 
-#endif // SC_SC_LIST_H
+#endif // SC_LIST_H
