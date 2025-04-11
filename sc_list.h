@@ -17,6 +17,12 @@ typedef struct {
 #define SC_LIST(type)                                                          \
   typedef type *sc_list_##type;                                                \
                                                                                \
+  static inline sc_list_size sc_list_##type##_count(                           \
+      const sc_list_##type list) {                                             \
+    sc_list_meta_data *data = ((sc_list_meta_data *)(list)) - 1;               \
+    return data->count;                                                        \
+  }                                                                            \
+                                                                               \
   static inline sc_list_##type sc_list_##type##_alloc(void) {                  \
     void *ptr = malloc(sizeof(sc_list_meta_data) +                             \
                        (sizeof(type) * SC_LIST_INITIAL_CAPACITY));             \
@@ -32,28 +38,30 @@ typedef struct {
     free(data);                                                                \
   }                                                                            \
                                                                                \
-  static inline sc_list_size sc_list_##type##_count(                           \
-      const sc_list_##type list) {                                             \
-    sc_list_meta_data *data = ((sc_list_meta_data *)(list)) - 1;               \
-    return data->count;                                                        \
-  }                                                                            \
-                                                                               \
   static inline void sc_list_##type##_add(sc_list_##type *list,                \
                                           const type element) {                \
     sc_list_meta_data *data = ((sc_list_meta_data *)(*list)) - 1;              \
     if (data->count >= data->capacity) {                                       \
       const sc_list_size new_capacity = data->count * 2 + 1;                   \
       data = realloc(data, sizeof(sc_list_meta_data) +                         \
-          (sizeof(type) * new_capacity));                                      \
+                               (sizeof(type) * new_capacity));                 \
       *list = (sc_list_##type)(data + 1);                                      \
     }                                                                          \
     (*list)[data->count] = element;                                            \
     data->count++;                                                             \
   }                                                                            \
                                                                                \
+  static inline sc_list_##type sc_list_##type##_alloc_from_array(              \
+      sc_list_##type other, sc_list_size length) {                             \
+    sc_list_##type l = sc_list_##type##_alloc();                               \
+    sc_foreach(i, length) { sc_list_##type##_add(&l, other[i]); }              \
+    return l;                                                               \
+  }                                                                            \
+                                                                               \
   static inline void sc_list_##type##_remove_at(const sc_list_##type list,     \
                                                 const sc_list_size index) {    \
-    if (!list) return;                                                         \
+    if (!list)                                                                 \
+      return;                                                                  \
     sc_list_meta_data *data = ((sc_list_meta_data *)(list)) - 1;               \
     (list)[index] = (list)[data->count - 1];                                   \
     data->count--;                                                             \
