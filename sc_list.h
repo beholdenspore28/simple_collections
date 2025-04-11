@@ -55,7 +55,7 @@ typedef struct {
       sc_list_##type other, sc_list_size length) {                             \
     sc_list_##type l = sc_list_##type##_alloc();                               \
     sc_foreach(i, length) { sc_list_##type##_add(&l, other[i]); }              \
-    return l;                                                               \
+    return l;                                                                  \
   }                                                                            \
                                                                                \
   static inline void sc_list_##type##_remove_at(const sc_list_##type list,     \
